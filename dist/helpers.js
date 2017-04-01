@@ -21,8 +21,8 @@ var _glob2 = _interopRequireDefault(_glob);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function readFiles(files, str, onFileContent, onError, callback) {
-  (0, _glob2.default)(files, function (err, files) {
+function readFiles(files, onFileContent, onError, callback) {
+  return (0, _glob2.default)(files, function (err, files) {
     if (err) {
       console.log('Oops, cannot read ' + files, err);
     }
@@ -34,11 +34,13 @@ function readFiles(files, str, onFileContent, onError, callback) {
           return;
         }
 
-        onFileContent(file, str, data);
+        onFileContent(file, data, function () {
+          return data;
+        });
       });
     });
 
-    callback();
+    return files;
   });
 }
 

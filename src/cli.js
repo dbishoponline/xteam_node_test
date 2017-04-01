@@ -11,62 +11,90 @@ class CLI {
     }
 
     this.counts = []
+    this.files = null
+    this.filesSearched = 0
 
-    let args = this.getUserArgs()
+    this.args = this.stripCommas(this.getUserArgs())
 
-    this.exec(args)
-
-    return instance
+    this.exec(this.args)
+    //
+    // return instance
   }
 
   getUserArgs() {
     return process.argv.length ? process.argv.slice(2) : null
   }
 
-  exec(args) {
+  stripCommas(args) {
+    return args.map((arg) => {
+      return arg.replace(',', '')
+    })
+  }
 
-    let output = ``
+  exec(args = null) {
+    if (!args){
+      args = this.args
+    }
 
-    args.forEach((arg) => {
-      let name = arg.replace(',', '')
-      let files = './data/*.json'
+    let files = './data/*.json'
 
-      readFiles(files, name, this.onReadFile.bind(this), this.onError.bind(this), () => {
-        this.echo()
-      })
+    this.files = readFiles(files, this.onReadFile.bind(this), this.onError.bind(this), this.onComplete.bind(this))
+  }
+
+
+
+  onReadFile(file, data, callback) {
+    // var obj = JSON.parse(data)
+    this.args.forEach((arg) => {
+      if(typeof this.counts[arg] == 'undefined' ) {
+        this.counts[arg] = countOccurs(arg, data)
+      }
+      else {
+        this.counts[arg] += countOccurs(arg, data)
+      }
     })
 
-    return output
+    console.log(this.filesSearched, this.args.length, this.counts)
+
+    callback.call(this)
   }
 
-  onReadFile(file, str, data) {
-    // var obj = JSON.parse(data)
-    if(typeof this.counts[str] == 'undefined' ) {
-      this.counts[str] = countOccurs(str, data)
-    }
-    else {
-      this.counts[str] += countOccurs(str, data)
-    }
-  }
+
 
   onError(err) {
     throw(`Failed to read files ${err}`)
   }
 
+
+
+
+  onComplete(){
+    this.filesSearched++
+    if(this.filesSearched == this.files.length){
+      console.log(this.filesSearched, this.args.length, this.counts)
+      this.echo.call(this)
+      return
+    }
+    return
+  }
+
+
+
+
   echo(){
     console.log('COUNTS:', this.counts)
-    var sorted = sortByRank(this.counts)
-
-    var str = sorted.reduce((acc, val) => {
-      return `
-        ${acc}
-        - ${val.name}       ${val.count}
-      `
-    }, '')
-
-    console.log(`
-      ${str}
-    `)
+    // var sorted = sortByRank(this.counts)
+    //
+    // var str = sorted.reduce((acc, val) => {
+    //   return `
+    //     ${acc}
+    //     - ${val.name}       ${val.count}
+    //   `
+    // }, '')
+    //
+    // console.log(`
+    //   ${str}
+    // `)
 
     //
     // pizza     15

@@ -1,8 +1,8 @@
 import fs from 'fs'
 import glob from 'glob'
 
-export function readFiles(files, str, onFileContent, onError, callback) {
-  glob(files, (err, files) => {
+export function readFiles(files, onFileContent, onError, callback) {
+  return glob(files, (err, files) => {
     if(err) {
       console.log(`Oops, cannot read ${files}`, err)
     }
@@ -14,11 +14,13 @@ export function readFiles(files, str, onFileContent, onError, callback) {
           return
         }
 
-        onFileContent(file, str, data)
+        onFileContent(file, data, function(){
+          return data
+        })
       })
     })
 
-    callback()
+    return files
   })
 
 

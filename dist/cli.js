@@ -23,12 +23,14 @@ var CLI = function () {
     }
 
     this.counts = [];
+    this.files = null;
+    this.filesSearched = 0;
 
-    var args = this.getUserArgs();
+    this.args = this.stripCommas(this.getUserArgs());
 
-    this.exec(args);
-
-    return instance;
+    this.exec(this.args);
+    //
+    // return instance
   }
 
   _createClass(CLI, [{
@@ -37,32 +39,42 @@ var CLI = function () {
       return process.argv.length ? process.argv.slice(2) : null;
     }
   }, {
-    key: 'exec',
-    value: function exec(args) {
-      var _this = this;
-
-      var output = '';
-
-      args.forEach(function (arg) {
-        var name = arg.replace(',', '');
-        var files = './data/*.json';
-
-        (0, _helpers.readFiles)(files, name, _this.onReadFile.bind(_this), _this.onError.bind(_this), function () {
-          _this.echo();
-        });
+    key: 'stripCommas',
+    value: function stripCommas(args) {
+      return args.map(function (arg) {
+        return arg.replace(',', '');
       });
+    }
+  }, {
+    key: 'exec',
+    value: function exec() {
+      var args = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
-      return output;
+      if (!args) {
+        args = this.args;
+      }
+
+      var files = './data/*.json';
+
+      this.files = (0, _helpers.readFiles)(files, this.onReadFile.bind(this), this.onError.bind(this), this.onComplete.bind(this));
     }
   }, {
     key: 'onReadFile',
-    value: function onReadFile(file, str, data) {
+    value: function onReadFile(file, data, callback) {
+      var _this = this;
+
       // var obj = JSON.parse(data)
-      if (typeof this.counts[str] == 'undefined') {
-        this.counts[str] = (0, _helpers.countOccurs)(str, data);
-      } else {
-        this.counts[str] += (0, _helpers.countOccurs)(str, data);
-      }
+      this.args.forEach(function (arg) {
+        if (typeof _this.counts[arg] == 'undefined') {
+          _this.counts[arg] = (0, _helpers.countOccurs)(arg, data);
+        } else {
+          _this.counts[arg] += (0, _helpers.countOccurs)(arg, data);
+        }
+      });
+
+      console.log(this.filesSearched, this.args.length, this.counts);
+
+      callback.call(this);
     }
   }, {
     key: 'onError',
@@ -70,16 +82,32 @@ var CLI = function () {
       throw 'Failed to read files ' + err;
     }
   }, {
+    key: 'onComplete',
+    value: function onComplete() {
+      this.filesSearched++;
+      if (this.filesSearched == this.files.length) {
+        console.log(this.filesSearched, this.args.length, this.counts);
+        this.echo.call(this);
+        return;
+      }
+      return;
+    }
+  }, {
     key: 'echo',
     value: function echo() {
       console.log('COUNTS:', this.counts);
-      var sorted = (0, _helpers.sortByRank)(this.counts);
-
-      var str = sorted.reduce(function (acc, val) {
-        return '\n        ' + acc + '\n        - ' + val.name + '       ' + val.count + '\n      ';
-      }, '');
-
-      console.log('\n      ' + str + '\n    ');
+      // var sorted = sortByRank(this.counts)
+      //
+      // var str = sorted.reduce((acc, val) => {
+      //   return `
+      //     ${acc}
+      //     - ${val.name}       ${val.count}
+      //   `
+      // }, '')
+      //
+      // console.log(`
+      //   ${str}
+      // `)
 
       //
       // pizza     15
