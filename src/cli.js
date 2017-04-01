@@ -1,4 +1,4 @@
-import { readFiles, countOccurs, sortByRank } from './helpers'
+import { readFiles, countOccurs, sortByRank, getSpacing, getLongestArgWidth } from './helpers'
 
 let instance = null
 
@@ -10,15 +10,14 @@ class CLI {
       instance = this
     }
 
-    this.counts = []
+    this.counts = {}
     this.files = null
     this.filesSearched = 0
+    this.defaultSpacing = 5
 
     this.args = this.stripCommas(this.getUserArgs())
 
     this.exec(this.args)
-    //
-    // return instance
   }
 
   getUserArgs() {
@@ -38,13 +37,13 @@ class CLI {
 
     let files = './data/*.json'
 
-    this.files = readFiles(files, this.onReadFile.bind(this), this.onError.bind(this), this.onComplete.bind(this))
+    readFiles(files, this.onReadFile.bind(this), this.onError.bind(this), this.onComplete.bind(this))
   }
 
-
-
-  onReadFile(file, data, callback) {
+  onReadFile(files, file, data, callback) {
     // var obj = JSON.parse(data)
+    this.files = files
+
     this.args.forEach((arg) => {
       if(typeof this.counts[arg] == 'undefined' ) {
         this.counts[arg] = countOccurs(arg, data)
@@ -54,47 +53,38 @@ class CLI {
       }
     })
 
-    console.log(this.filesSearched, this.args.length, this.counts)
-
     callback.call(this)
   }
-
-
 
   onError(err) {
     throw(`Failed to read files ${err}`)
   }
 
-
-
-
   onComplete(){
     this.filesSearched++
+
     if(this.filesSearched == this.files.length){
-      console.log(this.filesSearched, this.args.length, this.counts)
       this.echo.call(this)
-      return
     }
     return
   }
 
-
-
-
   echo(){
-    console.log('COUNTS:', this.counts)
-    // var sorted = sortByRank(this.counts)
-    //
-    // var str = sorted.reduce((acc, val) => {
-    //   return `
-    //     ${acc}
-    //     - ${val.name}       ${val.count}
-    //   `
-    // }, '')
-    //
-    // console.log(`
-    //   ${str}
-    // `)
+    let sorted = sortByRank(this.counts)
+    console.log('SORTED:', sorted)
+    console.log('args:', this.args)
+
+    let argWidth = getLongestArgWidth(this.args)
+
+    let str = sorted.reduce((acc, val) => {
+      console.log('val'+val[0], 'val'+val[1])
+      let spacing = getSpacing(argWidth + this.defaultSpacing, val[0], val[1])
+      return `${acc}\n${val[0]}${spacing}${val[1]}`
+    }, '')
+
+    console.log(`
+      ${str}
+    `)
 
     //
     // pizza     15

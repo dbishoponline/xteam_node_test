@@ -22,15 +22,14 @@ var CLI = function () {
       instance = this;
     }
 
-    this.counts = [];
+    this.counts = {};
     this.files = null;
     this.filesSearched = 0;
+    this.defaultSpacing = 5;
 
     this.args = this.stripCommas(this.getUserArgs());
 
     this.exec(this.args);
-    //
-    // return instance
   }
 
   _createClass(CLI, [{
@@ -56,14 +55,16 @@ var CLI = function () {
 
       var files = './data/*.json';
 
-      this.files = (0, _helpers.readFiles)(files, this.onReadFile.bind(this), this.onError.bind(this), this.onComplete.bind(this));
+      (0, _helpers.readFiles)(files, this.onReadFile.bind(this), this.onError.bind(this), this.onComplete.bind(this));
     }
   }, {
     key: 'onReadFile',
-    value: function onReadFile(file, data, callback) {
+    value: function onReadFile(files, file, data, callback) {
       var _this = this;
 
       // var obj = JSON.parse(data)
+      this.files = files;
+
       this.args.forEach(function (arg) {
         if (typeof _this.counts[arg] == 'undefined') {
           _this.counts[arg] = (0, _helpers.countOccurs)(arg, data);
@@ -71,8 +72,6 @@ var CLI = function () {
           _this.counts[arg] += (0, _helpers.countOccurs)(arg, data);
         }
       });
-
-      console.log(this.filesSearched, this.args.length, this.counts);
 
       callback.call(this);
     }
@@ -85,29 +84,30 @@ var CLI = function () {
     key: 'onComplete',
     value: function onComplete() {
       this.filesSearched++;
+
       if (this.filesSearched == this.files.length) {
-        console.log(this.filesSearched, this.args.length, this.counts);
         this.echo.call(this);
-        return;
       }
       return;
     }
   }, {
     key: 'echo',
     value: function echo() {
-      console.log('COUNTS:', this.counts);
-      // var sorted = sortByRank(this.counts)
-      //
-      // var str = sorted.reduce((acc, val) => {
-      //   return `
-      //     ${acc}
-      //     - ${val.name}       ${val.count}
-      //   `
-      // }, '')
-      //
-      // console.log(`
-      //   ${str}
-      // `)
+      var _this2 = this;
+
+      var sorted = (0, _helpers.sortByRank)(this.counts);
+      console.log('SORTED:', sorted);
+      console.log('args:', this.args);
+
+      var argWidth = (0, _helpers.getLongestArgWidth)(this.args);
+
+      var str = sorted.reduce(function (acc, val) {
+        console.log('val' + val[0], 'val' + val[1]);
+        var spacing = (0, _helpers.getSpacing)(argWidth + _this2.defaultSpacing, val[0], val[1]);
+        return acc + '\n' + val[0] + spacing + val[1];
+      }, '');
+
+      console.log('\n      ' + str + '\n    ');
 
       //
       // pizza     15

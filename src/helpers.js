@@ -1,8 +1,10 @@
 import fs from 'fs'
 import glob from 'glob'
 
-export function readFiles(files, onFileContent, onError, callback) {
-  return glob(files, (err, files) => {
+export function readFiles(files, onRead, onError, onComplete) {
+  let filesArr = []
+
+  glob(files, (err, files) => {
     if(err) {
       console.log(`Oops, cannot read ${files}`, err)
     }
@@ -14,31 +16,41 @@ export function readFiles(files, onFileContent, onError, callback) {
           return
         }
 
-        onFileContent(file, data, function(){
-          return data
-        })
+        onRead(files, file, data, onComplete)
       })
     })
-
-    return files
   })
-
-
 }
 
-export function sortByRank(arr){
-  // var sortable = []
-  // var new = {
-  //   ...obj
-  // }
-  //
-  // for(var prop in obj) {
-  //   sortable[property] = prop
-  // }
+export function sortByRank(obj){
 
-  var newArr = arr.concat([])
+  var arr = []
 
-  return newArr.sort()
+  for(var i in obj) arr.push([i, obj[i]])
+
+  return arr.sort((a, b) => {
+    a = a[1]
+    b = b[1]
+
+    return a > b ? -1 : (a < b ? 1 : 0)
+  })
+}
+
+export function getSpacing(max = 10, label, num){
+  let spacing = ``
+  let numSpaces = 0
+
+  let labelLength = label.length
+  let numLength = (num.toString()).length
+  let charWidth = labelLength + numLength
+
+  if(charWidth <= max){
+    numSpaces = max - charWidth
+  }
+  for(var i = 0; i <= numSpaces; i++ ){
+    spacing += ` `
+  }
+  return spacing
 }
 
 // //called with every property and its value
@@ -56,50 +68,14 @@ export function traverse(obj, func) {
     }
 }
 
-// //that's all... no magic, no bloated framework
-// traverse(o,process)
-
+export function getLongestArgWidth(args){
+  return args.reduce((acc, arg) => {
+    let accLength = acc
+    let argLength = arg.length
+    return (argLength > accLength) ? argLength : accLength
+  }, '')
+}
 
 export function countOccurs(str, inStr){
-  return (inStr.match(str) || []).length;
+  return (inStr.match(str) || []).length
 }
-//
-//
-// glob("data/*.json", function(err, files) { // read the folder or folders if you want: example json/**/*.json
-//   if(err) {
-//     console.log("cannot read the folder, something goes wrong with glob", err)
-//   }
-//   var matters = []
-//   files.forEach(function(file) {
-//     fs.readFile(file, 'utf8', function (err, data) { // Read each file
-//       if(err) {
-//         console.log("cannot read the file, something goes wrong with the file", err)
-//       }
-//       var obj = JSON.parse(data)
-//       obj.action.forEach(function(crud) {
-//         for(var k in crud) {
-//           if(_inArray(crud[k].providedAction, matters)) {
-//             // do your magic HERE
-//             console.log("duplicate founded!")
-//             // you want to return here and cut the flow, there is no point in keep reading files.
-//             break
-//           }
-//           matters.push(crud[k].providedAction)
-//         }
-//       })
-//     })
-//   })
-// })
-//
-//
-//
-// var findObjectByLabel = function(obj, label) {
-//     if(obj.label === label) { return obj }
-//     for(var i in obj) {
-//         if(obj.hasOwnProperty(i)){
-//             var foundLabel = findObjectByLabel(obj[i], label)
-//             if(foundLabel) { return foundLabel }
-//         }
-//     }
-//     return null
-// }

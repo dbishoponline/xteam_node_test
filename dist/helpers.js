@@ -8,7 +8,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 exports.readFiles = readFiles;
 exports.sortByRank = sortByRank;
+exports.getSpacing = getSpacing;
 exports.traverse = traverse;
+exports.getLongestArgWidth = getLongestArgWidth;
 exports.countOccurs = countOccurs;
 
 var _fs = require('fs');
@@ -21,8 +23,10 @@ var _glob2 = _interopRequireDefault(_glob);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function readFiles(files, onFileContent, onError, callback) {
-  return (0, _glob2.default)(files, function (err, files) {
+function readFiles(files, onRead, onError, onComplete) {
+  var filesArr = [];
+
+  (0, _glob2.default)(files, function (err, files) {
     if (err) {
       console.log('Oops, cannot read ' + files, err);
     }
@@ -34,29 +38,45 @@ function readFiles(files, onFileContent, onError, callback) {
           return;
         }
 
-        onFileContent(file, data, function () {
-          return data;
-        });
+        onRead(files, file, data, onComplete);
       });
     });
-
-    return files;
   });
 }
 
-function sortByRank(arr) {
-  // var sortable = []
-  // var new = {
-  //   ...obj
-  // }
-  //
-  // for(var prop in obj) {
-  //   sortable[property] = prop
-  // }
+function sortByRank(obj) {
 
-  var newArr = arr.concat([]);
+  var arr = [];
 
-  return newArr.sort();
+  for (var i in obj) {
+    arr.push([i, obj[i]]);
+  }return arr.sort(function (a, b) {
+    a = a[1];
+    b = b[1];
+
+    return a > b ? -1 : a < b ? 1 : 0;
+  });
+}
+
+function getSpacing() {
+  var max = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
+  var label = arguments[1];
+  var num = arguments[2];
+
+  var spacing = '';
+  var numSpaces = 0;
+
+  var labelLength = label.length;
+  var numLength = num.toString().length;
+  var charWidth = labelLength + numLength;
+
+  if (charWidth <= max) {
+    numSpaces = max - charWidth;
+  }
+  for (var i = 0; i <= numSpaces; i++) {
+    spacing += ' ';
+  }
+  return spacing;
 }
 
 // //called with every property and its value
@@ -74,50 +94,14 @@ function traverse(obj, func) {
   }
 }
 
-// //that's all... no magic, no bloated framework
-// traverse(o,process)
-
+function getLongestArgWidth(args) {
+  return args.reduce(function (acc, arg) {
+    var accLength = acc;
+    var argLength = arg.length;
+    return argLength > accLength ? argLength : accLength;
+  }, '');
+}
 
 function countOccurs(str, inStr) {
   return (inStr.match(str) || []).length;
 }
-//
-//
-// glob("data/*.json", function(err, files) { // read the folder or folders if you want: example json/**/*.json
-//   if(err) {
-//     console.log("cannot read the folder, something goes wrong with glob", err)
-//   }
-//   var matters = []
-//   files.forEach(function(file) {
-//     fs.readFile(file, 'utf8', function (err, data) { // Read each file
-//       if(err) {
-//         console.log("cannot read the file, something goes wrong with the file", err)
-//       }
-//       var obj = JSON.parse(data)
-//       obj.action.forEach(function(crud) {
-//         for(var k in crud) {
-//           if(_inArray(crud[k].providedAction, matters)) {
-//             // do your magic HERE
-//             console.log("duplicate founded!")
-//             // you want to return here and cut the flow, there is no point in keep reading files.
-//             break
-//           }
-//           matters.push(crud[k].providedAction)
-//         }
-//       })
-//     })
-//   })
-// })
-//
-//
-//
-// var findObjectByLabel = function(obj, label) {
-//     if(obj.label === label) { return obj }
-//     for(var i in obj) {
-//         if(obj.hasOwnProperty(i)){
-//             var foundLabel = findObjectByLabel(obj[i], label)
-//             if(foundLabel) { return foundLabel }
-//         }
-//     }
-//     return null
-// }
