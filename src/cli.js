@@ -1,4 +1,4 @@
-import { getUserArgs, stripCommas, readFiles, countOccurs, sortByRank, getSpacing, getLongestArgWidth } from './helpers'
+import { getUserArgs, cleanCommas, readFiles, countOccurs, sortByRank, getSpacing, getLongestArgWidth } from './helpers'
 
 let instance = null
 
@@ -23,7 +23,7 @@ class CLI {
       }, () => {}, ()=> {})
     }
 
-    this.args = stripCommas(getUserArgs())
+    this.args = cleanCommas(getUserArgs())
 
     this.exec(this.args)
   }

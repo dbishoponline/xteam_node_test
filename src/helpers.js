@@ -2,23 +2,41 @@ import fs from 'fs'
 import glob from 'glob'
 
 /**
-  * makeDir
+  * getUserArgs
   *
-  * creates new directory or directories
+  * returns an array of arguments from the CLI command
   *
-  * @param  {string|array}   path   name of the new directory
-  * @return {string}          This returns a command string
+  * @return {array}          returns an array of strings
   */
 export function getUserArgs() {
   return process.argv.length ? process.argv.slice(2) : null
 }
 
-export function stripCommas(args) {
+/**
+  * cleanCommas
+  *
+  * removes the commas from an array values and returns a new array
+  *
+  * @param  {array}   args   array of string values which will be cleaned
+  * @return {array}           new array with commas removed
+  */
+export function cleanCommas(args) {
   return args.map((arg) => {
     return arg.replace(',', '')
   })
 }
 
+/**
+  * readFiles
+  *
+  * reads all files in a dir based on a glob string and triggers callback functions
+  *
+  * @param  {string}     files        path of the files which will be read
+  * @param  {function}   onRead       callback function when a file is read
+  * @param  {function}   onError      callback function when an error occurs
+  * @param  {function}   onComplete   callback function when reading the file is complete
+  * @return {array}                   new array of files from a glob
+  */
 export function readFiles(files, onRead, onError, onComplete) {
   let filesArr = []
 
@@ -37,6 +55,8 @@ export function readFiles(files, onRead, onError, onComplete) {
         onRead(files, file, data, onComplete)
       })
     })
+
+    return files
   })
 }
 
