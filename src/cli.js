@@ -24,8 +24,8 @@ class CLI {
 
     if(!getUserArgs().length){
       let tags = '../tags.txt'
+
       readFiles(tags, (files, file, data) => {
-        console.log(files, file, data)
         this.args = data
       }, () => {}, ()=> {})
     }
@@ -86,14 +86,11 @@ class CLI {
 
   echo(){
     let sorted = sortByRank(this.counts)
-    console.log('SORTED:', sorted)
-    console.log('args:', this.args)
-
     let argWidth = getLongestArgWidth(this.args)
 
     let str = sorted.reduce((acc, val) => {
-      console.log('val'+val[0], 'val'+val[1])
       let spacing = getSpacing(argWidth + this.defaultSpacing, val[0], val[1])
+
       return `${acc}\n${val[0]}${spacing}${val[1]}`
     }, '')
 
