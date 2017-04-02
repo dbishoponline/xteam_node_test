@@ -1,4 +1,4 @@
-import { readFiles, countOccurs, sortByRank, getSpacing, getLongestArgWidth } from './helpers'
+import { getUserArgs, stripCommas, readFiles, countOccurs, sortByRank, getSpacing, getLongestArgWidth } from './helpers'
 
 let instance = null
 
@@ -15,19 +15,17 @@ class CLI {
     this.filesSearched = 0
     this.defaultSpacing = 5
 
-    this.args = this.stripCommas(this.getUserArgs())
+    if(!getUserArgs().length){
+      let tags = '../tags.txt'
+      readFiles(tags, (files, file, data) => {
+        console.log(files, file, data)
+        this.args = data
+      }, () => {}, ()=> {})
+    }
+
+    this.args = stripCommas(getUserArgs())
 
     this.exec(this.args)
-  }
-
-  getUserArgs() {
-    return process.argv.length ? process.argv.slice(2) : null
-  }
-
-  stripCommas(args) {
-    return args.map((arg) => {
-      return arg.replace(',', '')
-    })
   }
 
   exec(args = null) {

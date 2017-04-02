@@ -1,6 +1,24 @@
 import fs from 'fs'
 import glob from 'glob'
 
+/**
+  * makeDir
+  *
+  * creates new directory or directories
+  *
+  * @param  {string|array}   path   name of the new directory
+  * @return {string}          This returns a command string
+  */
+export function getUserArgs() {
+  return process.argv.length ? process.argv.slice(2) : null
+}
+
+export function stripCommas(args) {
+  return args.map((arg) => {
+    return arg.replace(',', '')
+  })
+}
+
 export function readFiles(files, onRead, onError, onComplete) {
   let filesArr = []
 
