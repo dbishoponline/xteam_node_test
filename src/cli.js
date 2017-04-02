@@ -4,7 +4,14 @@ let instance = null
 
 class CLI {
 
-  constructor(options = {}) {
+  /**
+    * CLI.constructor
+    *
+    * constructs the CLI and triggers the executed command
+    *
+    * @return {object}           returns an instance of self
+    */
+  constructor() {
 
     if(!instance){
       instance = this
@@ -26,8 +33,18 @@ class CLI {
     this.args = cleanCommas(getUserArgs())
 
     this.exec(this.args)
+
+    return this
   }
 
+  /**
+    * exec
+    *
+    * runs the saga of reading json files and searching for a specific string
+    *
+    * @param  {array}     args        array of arguments
+    * @return {object}                returns a glob object
+    */
   exec(args = null) {
     if (!args){
       args = this.args
@@ -35,7 +52,7 @@ class CLI {
 
     let files = './data/*.json'
 
-    readFiles(files, this.onReadFile.bind(this), this.onError.bind(this), this.onComplete.bind(this))
+    return readFiles(files, this.onReadFile.bind(this), this.onError.bind(this), this.onComplete.bind(this))
   }
 
   onReadFile(files, file, data, callback) {

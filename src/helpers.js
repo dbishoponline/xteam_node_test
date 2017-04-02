@@ -40,7 +40,7 @@ export function cleanCommas(args) {
 export function readFiles(files, onRead, onError, onComplete) {
   let filesArr = []
 
-  glob(files, (err, files) => {
+  return glob(files, (err, files) => {
     if(err) {
       console.log(`Oops, cannot read ${files}`, err)
     }
@@ -60,6 +60,14 @@ export function readFiles(files, onRead, onError, onComplete) {
   })
 }
 
+/**
+  * sortByRank
+  *
+  * sort object properties keys by value amount descending
+  *
+  * @param  {object}     obj        the object who's props will be sorted
+  * @return {array}                 new array which has been sorted
+  */
 export function sortByRank(obj){
 
   var arr = []
@@ -74,6 +82,16 @@ export function sortByRank(obj){
   })
 }
 
+/**
+  * getSpacing
+  *
+  * returns the spacing between a row's label and value
+  *
+  * @param  {int}      max          max number of spaces
+  * @param  {string}   label        the label of the row
+  * @param  {int}      num          the number of the row
+  * @return {string}                a string of spaces
+  */
 export function getSpacing(max = 10, label, num){
   let spacing = ``
   let numSpaces = 0
@@ -91,21 +109,14 @@ export function getSpacing(max = 10, label, num){
   return spacing
 }
 
-// //called with every property and its value
-// function process(key,value) {
-//     console.log(key + " : "+value)
-// }
-
-export function traverse(obj, func) {
-    for (var i in obj) {
-        func.apply(this,[i,obj[i]])
-        if (obj[i] !== null && typeof(obj[i])=="object") {
-            //going one step down in the object tree!!
-            traverse(obj[i],func)
-        }
-    }
-}
-
+/**
+  * getLongestArgWidth
+  *
+  * returns the longest arg (string) of all the args in an array
+  *
+  * @param  {array}      args      array of arguments (strings)
+  * @return {string}               returns the longest string's char width in the array
+  */
 export function getLongestArgWidth(args){
   return args.reduce((acc, arg) => {
     let accLength = acc
@@ -114,6 +125,15 @@ export function getLongestArgWidth(args){
   }, '')
 }
 
+/**
+  * countOccurs
+  *
+  * counts the number of times a string exists in another string
+  *
+  * @param  {string}      str      a string to search for
+  * @param  {string}      inStr    a string to search in
+  * @return {string}               returns the num of times
+  */
 export function countOccurs(str, inStr){
   return (inStr.match(str) || []).length
 }
