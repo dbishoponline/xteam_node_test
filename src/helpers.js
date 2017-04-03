@@ -17,12 +17,15 @@ export function getUserArgs() {
   *
   * removes the commas from an array values and returns a new array
   *
-  * @param  {array}   args   array of string values which will be cleaned
+  * @param  {array}   arr   array of string values which will be cleaned
   * @return {array}           new array with commas removed
   */
-export function cleanCommas(args) {
-  return args.map((arg) => {
-    return arg.replace(',', '')
+export function cleanCommas(arr) {
+  if(!Array.isArray(arr)){
+    throw 'cleanCommas() requires an array.'
+  }
+  return arr.map((item) => {
+    return item.replace(',', '')
   })
 }
 
@@ -34,10 +37,10 @@ export function cleanCommas(args) {
   * @param  {string}     files        path of the files which will be read
   * @param  {function}   onRead       callback function when a file is read
   * @param  {function}   onError      callback function when an error occurs
-  * @param  {function}   onComplete   callback function when reading the file is complete
+  * @param  {function}   onDone   callback function when reading the file is complete
   * @return {array}                   new array of files from a glob
   */
-export function readFiles(files, onRead, onError, onComplete) {
+export function readFiles(files, onRead, onError, onDone) {
   let filesArr = []
 
   glob(files, (err, files) => {
@@ -46,13 +49,13 @@ export function readFiles(files, onRead, onError, onComplete) {
     }
 
     files.forEach((file) => {
-      fs.readFile(file, 'utf-8', (err, data) => {
+      fs.readFile(file, 'utf8', (err, content) => {
         if (err) {
-          onError(err)
+          onError(err, file)
           return
         }
 
-        onRead(files, file, data, onComplete)
+        return onRead(files, file, content, onDone)
       })
     })
 
@@ -140,4 +143,8 @@ export function getLongestArgWidth(args){
   */
 export function countOccurs(str, inStr){
   return (inStr.match(str) || []).length
+}
+
+export function trim(str){
+  return str.replace(/^\s+|\s+$/g,'')
 }

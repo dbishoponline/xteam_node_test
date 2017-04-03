@@ -1,4 +1,4 @@
-import { getUserArgs, cleanCommas, readFiles, countOccurs, sortByRank, getSpacing, getLongestArgWidth } from './helpers'
+import { getUserArgs, cleanCommas, readFiles, countOccurs, sortByRank, getSpacing, getLongestArgWidth, trim } from './helpers'
 
 let instance = null
 
@@ -7,96 +7,117 @@ class CLI {
   /**
     * CLI.constructor
     *
-    * constructs the CLI and triggers the executed command
+    * constructs the CLI and triggers the finduted command
     *
     * @return {object}           returns an instance of self
     */
   constructor() {
+    // an array of files that will be searched
+    this.files = {}
 
-    if(!instance){
-      instance = this
-    }
+    // an object of counts for each tag
+    this.tagCounts = {}
 
-    this.counts = {}
-    this.files = null
-    this.filesSearched = 0
+    // the default amount of spaces between each row's label (left) and count (right)
     this.defaultSpacing = 5
 
-    if(!getUserArgs().length){
-      let tags = '../tags.txt'
+    // file with default tags that will be searched if user does not specific any arguments
+    this.tagsFile = '**/tags.txt'
 
-      readFiles(tags, (files, file, data) => {
-        console.log(data)
-        this.args = data
-      }, () => {}, ()=> {})
-    }
+    // the path to files that will be searched
+    this.dataFiles = './data/*.json'
 
-    this.args = cleanCommas(getUserArgs())
+    // gets an array of tags either from args or default tags file
+    this.getTags((tags) => {
+      this.tags = tags
 
-    this.exec(this.args)
+      // searches and counts tags in the data files, then displays count to screen
+      this.find(() => {
+        this.echo(this.tagCounts)
+      })
+    })
 
+    // returns an instance of self
     return this
   }
 
-  /**
-    * exec
-    *
-    * runs the saga of reading json files and searching for a specific string
-    *
-    * @param  {array}     args        array of arguments
-    * @return {object}                returns a glob object
-    */
-  exec(args = null) {
-    if (!args){
-      args = this.args
+  getTags(callback){
+    this.args = cleanCommas(getUserArgs())
+
+    // if user args exist, use as the tags
+    if(this.args.length){
+      callback(this.args)
     }
 
-    let files = './data/*.json'
-
-    return readFiles(files, this.onReadFile.bind(this), this.onError.bind(this), this.onComplete.bind(this))
+    // else load tags from ../tags.txt
+    else {
+      this.loadTagsFile((content) => {
+        callback(trim(content).split('\n'))
+      })
+    }
   }
 
-  onReadFile(files, file, data, callback) {
-    // var obj = JSON.parse(data)
-    this.files = files
+  loadTagsFile(callback){
+    readFiles(this.tagsFile, (files, file, content, onDone) => {
+      onDone(content)
+    }, this.onError, (content) => {
+      callback(content)
+    })
+  }
 
-    this.args.forEach((arg) => {
-      if(typeof this.counts[arg] == 'undefined' ) {
-        this.counts[arg] = countOccurs(arg, data)
+  /**
+    * find
+    *
+    * runs the saga of finding and counting tags in an array json files and searching for a specific string
+    *
+    * @return {object}                returns a glob object
+    */
+  find(callback) {
+    readFiles(this.dataFiles, this.onReadDataFile.bind(this), this.onError.bind(this), () => {
+      callback()
+    })
+  }
+
+  onReadDataFile(files, file, content, callback) {
+    this.files[file] = content
+
+    this.countTagsInFileContent(content)
+
+    if(Object.keys(this.files).length == files.length){
+      callback(this)
+    }
+  }
+
+
+  onError(err, file) {
+    throw(`Failed to read files ${err}: ${file}`)
+  }
+
+  countTagsInFileContent(content){
+    this.tags.forEach((arg) => {
+      if(typeof this.tagCounts[arg] == 'undefined' ) {
+        this.tagCounts[arg] = countOccurs(arg, content)
       }
       else {
-        this.counts[arg] += countOccurs(arg, data)
+        this.tagCounts[arg] += countOccurs(arg, content)
       }
     })
 
-    callback.call(this)
+    return this.tagCounts
   }
 
-  onError(err) {
-    throw(`Failed to read files ${err}`)
-  }
+  echo(counts){
+    let sorted = sortByRank(counts)
+    let argWidth = getLongestArgWidth(this.tags)
 
-  onComplete(){
-    this.filesSearched++
-
-    if(this.filesSearched == this.files.length){
-      this.echo.call(this)
-    }
-    return
-  }
-
-  echo(){
-    let sorted = sortByRank(this.counts)
-    let argWidth = getLongestArgWidth(this.args)
-
-    let str = sorted.reduce((acc, val) => {
+    let output = sorted.reduce((acc, val) => {
       let spacing = getSpacing(argWidth + this.defaultSpacing, val[0], val[1])
 
       return `${acc}\n${val[0]}${spacing}${val[1]}`
     }, '')
 
     console.log(`
-      ${str}
+      ${output}
     `)
 
     //
@@ -107,8 +128,8 @@ class CLI {
     //
   }
 
-  onError() {
-
+  onError(err, file) {
+    throw `Something went wrong trying to read the file: ${file}. \n Error Message: ${err}`
   }
 }
 
