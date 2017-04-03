@@ -26,6 +26,7 @@ class CLI {
       let tags = '../tags.txt'
 
       readFiles(tags, (files, file, data) => {
+        console.log(data)
         this.args = data
       }, () => {}, ()=> {})
     }

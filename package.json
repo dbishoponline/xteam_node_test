@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "babel src -d dist",
-    "test": "mocha test --recursive --watch",
+    "test": "mocha --require babel-polyfill --compilers js:babel-register",
     "find": "node dist/index.js"
   },
   "author": "Dylan Bishop",
