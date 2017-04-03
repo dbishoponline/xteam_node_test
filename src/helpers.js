@@ -40,7 +40,7 @@ export function cleanCommas(args) {
 export function readFiles(files, onRead, onError, onComplete) {
   let filesArr = []
 
-  return glob(files, (err, files) => {
+  glob(files, (err, files) => {
     if(err) {
       console.log(`Oops, cannot read ${files}`, err)
     }
@@ -56,8 +56,12 @@ export function readFiles(files, onRead, onError, onComplete) {
       })
     })
 
-    return files
+    filesArr = files
+
+    return false
   })
+
+  return filesArr
 }
 
 /**

@@ -1,11 +1,21 @@
+import test from 'ava'
+
 import { getUserArgs, cleanCommas, readFiles, countOccurs, sortByRank, getSpacing, getLongestArgWidth } from '../src/helpers'
 
-let chai = require('chai')
-let expect = chai.expect // we are using the "expect" style of Chai
+test(`readFiles() should return null if "files" argument is empty string`, t => {
+  let res = readFiles("", () => {}, () => {}, () => {})
 
-describe('CLI Helpers', () => {
-  it('readFiles() should return null if "files" argument is empty string', () => {
-    // let res = readFiles("", () => {}, () => {}, () => {})
-    expect(null).to.be.null
-  })
+  t.is(res.length, 0)
 })
+
+test(`readFiles() should return an array of file paths`, t => {
+  let res = readFiles('../data/*.json', () => {}, () => {}, () => {})
+
+  t.is(res.length, 0)
+})
+
+// test('bar', async t => {
+// 	const bar = Promise.resolve('bar');
+//
+// 	t.is(await bar, 'bar');
+// });
