@@ -8,10 +8,10 @@ test(`readFiles() should return null if "files" argument is empty string`, t => 
   t.is(res.length, 0)
 })
 
-test(`readFiles() should return an array of file paths`, t => {
+test(`readFiles() should return  an array of file paths`, t => {
   let res = readFiles('../data/*.json', () => {}, () => {}, () => {})
 
-  t.is(res.length, 0)
+  t.is(res.length, 4)
 })
 
 // test('bar', async t => {

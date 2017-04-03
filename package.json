@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "babel src -d dist",
-    "test": "ava --watch | tap-spec",
-    "test_report": "ava --tap | tap-spec",
+    "test": "ava --watch",
+    "test:report": "ava --tap | tap-spec",
     "find": "node dist/index.js"
   },
   "author": "Dylan Bishop",

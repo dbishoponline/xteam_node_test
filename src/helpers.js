@@ -56,9 +56,9 @@ export function readFiles(files, onRead, onError, onComplete) {
       })
     })
 
-    filesArr = files
+    filesArr = files.concat([])
 
-    return false
+    return files
   })
 
   return filesArr
