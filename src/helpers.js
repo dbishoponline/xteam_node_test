@@ -43,28 +43,55 @@ export function cleanCommas(arr) {
 export function readFiles(files, onRead, onError, onDone) {
   let filesArr = []
 
+
   glob(files, (err, files) => {
     if(err) {
       console.log(`Oops, cannot read ${files}`, err)
     }
 
-    files.forEach((file) => {
+    filesArr = files.concat([])
+
+    if(!filesArr.length) {
+      onDone('')
+      return files
+    }
+
+    filesArr.forEach((file) => {
       fs.readFile(file, 'utf8', (err, content) => {
         if (err) {
           onError(err, file)
           return
         }
 
-        return onRead(files, file, content, onDone)
+        return onRead(filesArr, file, content, onDone)
       })
     })
 
-    filesArr = files.concat([])
 
     return files
   })
 
   return filesArr
+}
+
+
+/**
+  * writeFile
+  *
+  * writes a file to disk
+  *
+  * @param  {string}     file         path to the file that will be created
+  * @param  {string}     content      callback function when a file is read
+  * @param  {function}   onError      callback function when an error occurs
+  * @param  {function}   onDone       callback function when reading the file is complete
+  */
+export function writeFile(file, content, onError, onDone) {
+  fs.writeFile(file, content, (err) => {
+    if(err) {
+      onError(err)
+    }
+    onDone(content)
+  })
 }
 
 /**
@@ -145,10 +172,26 @@ export function countOccurs(str, inStr){
   return (inStr.match(str) || []).length
 }
 
+/**
+  * trim
+  *
+  * trims extra spaces at the beginning and end of string
+  *
+  * @param  {string}      str      a string that will be trimmed
+  * @return {string}               returns the new string
+  */
 export function trim(str){
   return str.replace(/^\s+|\s+$/g,'')
 }
 
+/**
+  * validateJSON
+  *
+  * validates a json string
+  *
+  * @param  {string}      json      a string that will be validated
+  * @return {boolean}                returns a true if is valid JSON
+  */
 export function validateJSON(json){
   try {
     let obj = JSON.parse(json)
