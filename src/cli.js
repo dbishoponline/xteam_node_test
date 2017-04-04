@@ -1,11 +1,12 @@
-import { getUserArgs, cleanCommas, readFiles, writeFile, countOccurs, sortByRank, getSpacing, getLongestArgWidth, trim, validateJSON } from './helpers'
+import { getUserArgs, cleanCommas, readFiles, writeFile, countOccurs, sortByRank, getSpacing, getLongestArgWidth, trim, validateJSON, didUserRetryCommand, countTagsInFileContent, format, onError} from './helpers'
 
 let instance = null
 
 class CLI {
 
   /**
-    * constructor
+    * CLI - Command Line Interface
+    * @constructor
     *
     * constructs the CLI and triggers the finduted command
     *
@@ -21,9 +22,6 @@ class CLI {
 
     // an array of files that will be searched
     this.files = {}
-
-    // an array of files that were invalid json
-    this.filesInvalid = []
 
     // an object of counts for each tag
     this.tagCounts = {}
@@ -41,10 +39,10 @@ class CLI {
     this.cacheFile = './cached.json'
 
     // object to store the cacheFile content
-    this.cached = {
-      args: null,
-      output: null,
-    }
+    this.cached = {}
+    this.cached.args = []
+
+    this.userRetry = false
 
     // initialize the utility
     return this.init()
@@ -65,10 +63,12 @@ class CLI {
       this.cached = content.length ? JSON.parse(content) : {}
 
       // check to see if the same command was rerun by the user
-      if(this.didUserRetryCommand()){
+      if(didUserRetryCommand(this.args, this.cached.args)){
+        this.userRetry = true
         this.retryCommand()
       }
       else {
+        this.userRetry = false
         this.newCommand()
       }
     })
@@ -81,11 +81,12 @@ class CLI {
   *
   * loads the data from the cache file
   *
+  * @param  {function}   callback     triggered after the file(s) were read
   */
   getCached(callback){
     readFiles(this.cacheFile, (files, file, content, onDone) => {
       onDone(content)
-    }, this.onError, callback)
+    }, onError, callback)
   }
 
   /**
@@ -93,6 +94,9 @@ class CLI {
   *
   * caches args and output by writing to a file
   *
+  * @param  {function}   args       the args to be cached
+  * @param  {function}   output     the output to be cached
+  * @param  {function}   callback     callback triggered after the stuff is cached
   */
   cacheOutput(args, output, callback){
     let json = {
@@ -100,18 +104,7 @@ class CLI {
       output
     }
 
-    writeFile(this.cacheFile, JSON.stringify(json), this.onError, callback)
-  }
-
-  /**
-  * didUserRetryCommand
-  *
-  * returns a boolean if the user retried the CLI command with the same arguments
-  *
-  * @return {boolean}           returns true if the new arguments match the cache arguments
-  */
-  didUserRetryCommand(){
-    return this.args.toString() === this.cached.args.toString()
+    writeFile(this.cacheFile, JSON.stringify(json), onError, callback)
   }
 
   /**
@@ -130,7 +123,7 @@ class CLI {
       this.find(() => {
 
         // parses the tagCounts into formatted string
-        this.output = this.format(this.tagCounts)
+        this.output = format(this.tags, this.tagCounts, this.defaultSpacing)
 
         // cache the args and output
         this.cacheOutput(this.args, this.output, () => {
@@ -157,6 +150,7 @@ class CLI {
     *
     * gets the defaults tags
     *
+    * @param  {function}   callback   triggered when done getting the tags (either from args, or tags.txt)
     */
   getTags(callback){
     // if user args exist, use as the tags
@@ -177,11 +171,12 @@ class CLI {
     *
     * loads the data from the tags file
     *
+    * @param  {function}   callback   triggered when done reading the tags from a file
     */
   loadTagsFile(callback){
     readFiles(this.tagsFile, (files, file, content, onDone) => {
       onDone(content)
-    }, this.onError, (content) => {
+    }, onError, (content) => {
       callback(content)
     })
   }
@@ -191,9 +186,10 @@ class CLI {
     *
     * runs the saga of finding and counting tags in an array json files and searching for a specific string
     *
+    * @param  {function}   callback   triggered when done reading the data files
     */
   find(callback) {
-    readFiles(this.dataFiles, this.onReadDataFile.bind(this), this.onError.bind(this), () => {
+    readFiles(this.dataFiles, this.onReadDataFile.bind(this), onError.bind(this), () => {
       callback()
     })
   }
@@ -201,18 +197,21 @@ class CLI {
   /**
     * onReadDataFile
     *
-    * runs the saga of finding and counting tags in an array json files and searching for a specific string
+    * handles reading each data file and fires a callback when reading all the data files is finished
     *
+    * @param  {array}      files       array of pathnames to data files
+    * @param  {string}     file        the filename and path
+    * @param  {string}     content     the unparsed text content in the file
+    * @param  {function}   callback    triggered when done reading the tags from a file
     */
   onReadDataFile(files, file, content, callback) {
     this.files[file] = content
 
     if(!validateJSON(content)) {
-      this.filesInvalid.push(file)
-      console.error(`Cannot parse invalid JSON in file: ${file}`)
+      console.error(`Cannot parse invalid JSON in file: ${file} \n`)
     }
     else {
-      this.countTagsInFileContent(content)
+      countTagsInFileContent(this.tags, this.tagCounts, content)
     }
 
     if(Object.keys(this.files).length == files.length){
@@ -221,61 +220,14 @@ class CLI {
   }
 
   /**
-    * onError
+    * echo
     *
-    * runs the saga of finding and counting tags in an array json files and searching for a specific string
-    *
-    */
-  onError(err, file) {
-    throw `Something went wrong trying to read the file: ${file}. \n Error Message: ${err}`
-  }
-
-  /**
-    * find
-    *
-    * runs the saga of finding and counting tags in an array json files and searching for a specific string
-    *
-    */
-  countTagsInFileContent(content){
-    this.tags.forEach((arg) => {
-      if(typeof this.tagCounts[arg] == 'undefined' ) {
-        this.tagCounts[arg] = countOccurs(arg, content)
-      }
-      else {
-        this.tagCounts[arg] += countOccurs(arg, content)
-      }
-    })
-
-    return this.tagCounts
-  }
-
-  /**
-    * find
-    *
-    * runs the saga of finding and counting tags in an array json files and searching for a specific string
-    *
-    */
-  format(counts){
-    let sorted = sortByRank(counts)
-    let argWidth = getLongestArgWidth(this.tags)
-
-    return sorted.reduce((acc, val) => {
-      let spacing = getSpacing(argWidth + this.defaultSpacing, val[0], val[1])
-
-      return `${acc}\n${val[0]}${spacing}${val[1]}`
-    }, '')
-  }
-
-  /**
-    * find
-    *
-    * runs the saga of finding and counting tags in an array json files and searching for a specific string
+    * displays the output to the console
     *
     */
   echo(){
-    console.log(`
-      ${this.output}
-    `)
+    let cached = this.userRetry ? '(Cached)' : ''
+    console.log(`Totals ${cached} \n${this.output}\n`)
   }
 }
 

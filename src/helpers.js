@@ -59,7 +59,7 @@ export function readFiles(files, onRead, onError, onDone) {
     filesArr.forEach((file) => {
       fs.readFile(file, 'utf8', (err, content) => {
         if (err) {
-          onError(err, file)
+          onError(err, file, 'read')
           return
         }
 
@@ -88,7 +88,7 @@ export function readFiles(files, onRead, onError, onDone) {
 export function writeFile(file, content, onError, onDone) {
   fs.writeFile(file, content, (err) => {
     if(err) {
-      onError(err)
+      onError(err, file, 'write')
     }
     onDone(content)
   })
@@ -99,7 +99,7 @@ export function writeFile(file, content, onError, onDone) {
   *
   * sort object properties keys by value amount descending
   *
-  * @param  {object}     obj        the object who's props will be sorted
+  * @param  {obj}     obj        the object who's props will be sorted
   * @return {array}                 new array which has been sorted
   */
 export function sortByRank(obj){
@@ -121,9 +121,9 @@ export function sortByRank(obj){
   *
   * returns the spacing between a row's label and value
   *
-  * @param  {int}      max          max number of spaces
+  * @param  {number}      max          max number of spaces
   * @param  {string}   label        the label of the row
-  * @param  {int}      num          the number of the row
+  * @param  {number}      num          the number of the row
   * @return {string}                a string of spaces
   */
 export function getSpacing(max = 10, label, num){
@@ -203,4 +203,74 @@ export function validateJSON(json){
   catch (err) {}
 
   return false
+}
+
+/**
+* didUserRetryCommand
+*
+* returns a boolean if the user retried the CLI command with the same arguments
+*
+* @param  {array}   args       the args
+* @param  {array}   cached     the cached args
+*
+* @return {bool}           returns true if the new arguments match the cached arguments
+*/
+export function didUserRetryCommand(args, cached){
+  if(typeof cached == 'undefined') return false
+  return args.toString() === cached.toString()
+}
+
+/**
+  * countTagsInFileContent
+  *
+  * counts the tags in the file content
+  *
+  * @param  {array}   tags         the tags
+  * @param  {object}   tagCounts   containing counted tags name/values
+  * @param  {string}   content     the content string
+  */
+export function countTagsInFileContent(tags, tagCounts, content){
+  tags.forEach((arg) => {
+    if(typeof tagCounts[arg] == 'undefined' ) {
+      tagCounts[arg] = countOccurs(arg, content)
+    }
+    else {
+      tagCounts[arg] += countOccurs(arg, content)
+    }
+  })
+
+  return tagCounts
+}
+
+/**
+  * format
+  *
+  * formats the total counts of each tag with correct spacing
+  *
+  * @param  {array}   tags             the tags
+  * @param  {object}   counts           containing counted tags name/values
+  * @param  {number}   defaultSpacing   default number of spaces
+  */
+export function format(tags, counts, defaultSpacing){
+  let sorted = sortByRank(counts)
+  let argWidth = getLongestArgWidth(tags)
+
+  return sorted.reduce((acc, val) => {
+    let spacing = getSpacing(argWidth + defaultSpacing, val[0], val[1])
+
+    return `${acc}\n${val[0]}${spacing}${val[1]}`
+  }, '')
+}
+
+/**
+  * onError
+  *
+  * handles file read and write errors
+  *
+  * @param  {array}   err         the error message
+  * @param  {array}   file        the file pathname which failed
+  * @param  {string}  action      the type of action which failed
+  */
+export function onError(err, file, action) {
+  throw `Something went wrong trying to ${action} the file: ${file}. \n Error Message: ${err}`
 }
