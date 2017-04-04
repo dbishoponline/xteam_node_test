@@ -12,6 +12,8 @@ class CLI {
     * @return {object}           returns an instance of self
     */
   constructor() {
+    this.output = ''
+
     // an array of files that will be searched
     this.files = {}
 
@@ -92,7 +94,6 @@ class CLI {
       this.countTagsInFileContent(content)
     }
 
-    // if all files have been counted, fire the callback()
     if(Object.keys(this.files).length == files.length){
       callback(this)
     }
@@ -120,22 +121,15 @@ class CLI {
     let sorted = sortByRank(counts)
     let argWidth = getLongestArgWidth(this.tags)
 
-    let output = sorted.reduce((acc, val) => {
+    this.output = sorted.reduce((acc, val) => {
       let spacing = getSpacing(argWidth + this.defaultSpacing, val[0], val[1])
 
       return `${acc}\n${val[0]}${spacing}${val[1]}`
     }, '')
 
     console.log(`
-      ${output}
+      ${this.output}
     `)
-
-    //
-    // pizza     15
-    // spoon     2
-    // umbrella  0
-    // cats      0
-    //
   }
 
   onError(err, file) {
