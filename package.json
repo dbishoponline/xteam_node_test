@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A code test for a position on X-Team.",
   "main": "dist/index.js",
+  "repository": "git@git.dylanbishop.me:dylan.bishop/xteam_code_test.git",
   "scripts": {
     "build": "babel src -d dist",
     "test": "ava --watch",
