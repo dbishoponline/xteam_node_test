@@ -43,7 +43,6 @@ export function cleanCommas(arr) {
 export function readFiles(files, onRead, onError, onDone) {
   let filesArr = []
 
-
   glob(files, (err, files) => {
     if(err) {
       console.log(`Oops, cannot read ${files}`, err)
@@ -121,8 +120,8 @@ export function sortByRank(obj){
   *
   * returns the spacing between a row's label and value
   *
-  * @param  {number}      max          max number of spaces
-  * @param  {string}   label        the label of the row
+  * @param  {number}      max          max number of spaces (default is 10)
+  * @param  {string}      label        the label of the row
   * @param  {number}      num          the number of the row
   * @return {string}                a string of spaces
   */

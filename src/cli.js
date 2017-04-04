@@ -42,6 +42,7 @@ class CLI {
     this.cached = {}
     this.cached.args = []
 
+    // boolean which will be true when the user reenters the same input
     this.userRetry = false
 
     // initialize the utility
