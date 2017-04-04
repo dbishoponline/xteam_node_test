@@ -1,4 +1,4 @@
-import { getUserArgs, cleanCommas, readFiles, countOccurs, sortByRank, getSpacing, getLongestArgWidth, trim } from './helpers'
+import { getUserArgs, cleanCommas, readFiles, countOccurs, sortByRank, getSpacing, getLongestArgWidth, trim, validateJSON } from './helpers'
 
 let instance = null
 
@@ -14,6 +14,9 @@ class CLI {
   constructor() {
     // an array of files that will be searched
     this.files = {}
+
+    // an array of files that were invalid json
+    this.filesInvalid = []
 
     // an object of counts for each tag
     this.tagCounts = {}
@@ -81,8 +84,15 @@ class CLI {
   onReadDataFile(files, file, content, callback) {
     this.files[file] = content
 
-    this.countTagsInFileContent(content)
+    if(!validateJSON(content)) {
+      this.filesInvalid.push(file)
+      console.error(`Cannot parse invalid JSON in file: ${file}`)
+    }
+    else {
+      this.countTagsInFileContent(content)
+    }
 
+    // if all files have been counted, fire the callback()
     if(Object.keys(this.files).length == files.length){
       callback(this)
     }

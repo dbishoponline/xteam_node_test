@@ -148,3 +148,16 @@ export function countOccurs(str, inStr){
 export function trim(str){
   return str.replace(/^\s+|\s+$/g,'')
 }
+
+export function validateJSON(json){
+  try {
+    let obj = JSON.parse(json)
+
+    if (obj && typeof obj === "object") {
+      return true
+    }
+  }
+  catch (err) {}
+
+  return false
+}
