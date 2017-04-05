@@ -184,14 +184,14 @@ export function trim(str){
 }
 
 /**
-  * validateJSON
+  * isValidJSON
   *
   * validates a json string
   *
   * @param  {string}      json      a string that will be validated
   * @return {boolean}                returns a true if is valid JSON
   */
-export function validateJSON(json){
+export function isValidJSON(json){
   try {
     let obj = JSON.parse(json)
 

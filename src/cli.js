@@ -1,4 +1,4 @@
-import { getUserArgs, cleanCommas, readFiles, writeFile, countOccurs, sortByRank, getSpacing, getLongestArgWidth, trim, validateJSON, didUserRetryCommand, countTagsInFileContent, format, onError} from './helpers'
+import { getUserArgs, cleanCommas, readFiles, writeFile, countOccurs, sortByRank, getSpacing, getLongestArgWidth, trim, isValidJSON, didUserRetryCommand, countTagsInFileContent, format, onError} from './helpers'
 
 let instance = null
 
@@ -208,7 +208,7 @@ class CLI {
   onReadDataFile(files, file, content, callback) {
     this.files[file] = content
 
-    if(!validateJSON(content)) {
+    if(!isValidJSON(content)) {
       console.error(`Cannot parse invalid JSON in file: ${file} \n`)
     }
     else {

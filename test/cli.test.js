@@ -1,7 +1,7 @@
 import test from 'ava'
 import CLI from '../dist/cli'
 
-import { getUserArgs, cleanCommas, readFiles, countOccurs, sortByRank, getSpacing, getLongestArgWidth, trim, validateJSON } from '../src/helpers'
+import { getUserArgs, cleanCommas, readFiles, countOccurs, sortByRank, getSpacing, getLongestArgWidth, trim, isValidJSON } from '../src/helpers'
 
 
 test(`readFiles() should return null if "files" argument is empty string`, t => {
@@ -10,19 +10,22 @@ test(`readFiles() should return null if "files" argument is empty string`, t => 
   t.is(res.length, 0)
 })
 
-test(`readFiles() should return  an array of file paths`, t => {
+test.cb(`readFiles() should return  an array of file paths`, t => {
+  t.plan(1)
+
   let count = null
 
   let res = readFiles(__dirname+'/../data/*.json', (files, file, data, onComplete) => {
-    count = files
-    onComplete(files, file)
+    count = (!count) ? files.length : count
+    count--
+    if(!count){
+      onComplete(files, file, count)
+    }
   }, t.fail, onDone)
 
-  function onDone(files, file){
-    count = files.length--
-    if(!count){
-      t.pass()
-    }
+  function onDone(files, file, count){
+    t.is(count, 0)
+    t.end()
   }
 })
 
@@ -81,22 +84,39 @@ test(`trim() should return a string with any spaces at the beginning and end tri
   let newStr = trim(str)
   if(newStr.substring(0, 1).indexOf(' ') > -1 || newStr.substring(newStr.length - 1, newStr.length).indexOf(' ') > -1 ){
     t.fail(`\'${newStr}\'`)
+    t.end()
   }
   t.pass(`\'${newStr}\'`)
 })
 
-test.cb(`validateJSON() should return true when receives a valid json object `, t => {
-  // t.plan(1)
-  readFiles('./valid.json', (files, file, data, onComplete) => {
-    t.is(validateJSON(data), true)
-    // t.end()
-  }, t.fail, () => {})
+test.cb(`isValidJSON() should return true when receives a valid json object `, t => {
+  t.plan(1)
+  let count = null
+  readFiles('valid.json', (files, file, data, onComplete) => {
+    console.log(data)
+    count = (!count) ? files.length : count
+    count--
+    if(!count){
+      onComplete(data)
+    }
+  }, t.fail, (data) => {
+    t.is(isValidJSON(data.toString()), false)
+    t.end()
+  })
 })
 
-test.cb(`validateJSON() should return false when receives an invalid json object `, t => {
-  // t.plan(1)
-  readFiles('./invalid.json', (files, file, data, onComplete) => {
-    t.is(validateJSON(data), true)
-    // t.end()
-  }, t.fail, () => {})
+test.cb(`isValidJSON() should return false when receives an invalid json object `, t => {
+  t.plan(1)
+  let count = null
+  readFiles('invalid.json', (files, file, data, onComplete) => {
+    console.log(data)
+    count = (!count) ? files.length : count
+    count--
+    if(!count){
+      onComplete(data)
+    }
+  }, t.fail, (data) => {
+    t.is(isValidJSON(data.toString()), false)
+    t.end()
+  })
 })
