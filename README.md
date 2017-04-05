@@ -29,12 +29,15 @@ cats      0
 ## To Use
 
 1. build the project
+`npm install`
+
+2. build the project (optional)
 `npm run build`
 
-2. run the tests
+3. run the tests
 `npm run test`
 
-3. find the tags in the files
+4. find the tags in the files
 `npm run find [tag1] [tag2] [tag3]...`
 
 
