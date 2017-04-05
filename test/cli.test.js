@@ -1,7 +1,7 @@
 import test from 'ava'
 import CLI from '../dist/cli'
 
-import { getUserArgs, cleanCommas, readFiles, countOccurs, sortByRank, getSpacing, getLongestArgWidth } from '../src/helpers'
+import { getUserArgs, cleanCommas, readFiles, countOccurs, sortByRank, getSpacing, getLongestArgWidth, trim, validateJSON } from '../src/helpers'
 
 
 test(`readFiles() should return null if "files" argument is empty string`, t => {
@@ -53,4 +53,50 @@ test(`cleanCommas() should return an array without commas in any of the index va
   })
 
   t.pass()
+})
+
+test(`getSpacing() should return a string of spaces`, t => {
+  let spacing = getSpacing(10, 'ipsum', 22)
+  t.is(spacing.length, 4)
+})
+
+test(`getLongestArgWidth() should return a string of spaces`, t => {
+  let args = ['ipsum', 'amet', 'automobile', 'silver']
+  let longest = getLongestArgWidth(args)
+  t.is(longest, 10)
+})
+
+test(`countOccurs() should return a number of times the substring showed up in the larger string`, t => {
+  let str = "Lorem"
+  let inStr = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. In aliquam sollicitudin luctus.
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. In aliquam sollicitudin luctus.
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. In aliquam sollicitudin luctus.
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. In aliquam sollicitudin luctus.`
+  let count = countOccurs(str, inStr)
+  t.is(count, 4)
+})
+
+test(`trim() should return a string with any spaces at the beginning and end trimmed off `, t => {
+  let str = " Lorem ipsum dolor sit amet  "
+  let newStr = trim(str)
+  if(newStr.substring(0, 1).indexOf(' ') > -1 || newStr.substring(newStr.length - 1, newStr.length).indexOf(' ') > -1 ){
+    t.fail(`\'${newStr}\'`)
+  }
+  t.pass(`\'${newStr}\'`)
+})
+
+test.cb(`validateJSON() should return true when receives a valid json object `, t => {
+  // t.plan(1)
+  readFiles('./valid.json', (files, file, data, onComplete) => {
+    t.is(validateJSON(data), true)
+    // t.end()
+  }, t.fail, () => {})
+})
+
+test.cb(`validateJSON() should return false when receives an invalid json object `, t => {
+  // t.plan(1)
+  readFiles('./invalid.json', (files, file, data, onComplete) => {
+    t.is(validateJSON(data), true)
+    // t.end()
+  }, t.fail, () => {})
 })

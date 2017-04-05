@@ -1,0 +1,45 @@
+{
+  "_id": "58e474e567f453fddf32ca18",
+  "index": 0,
+  "guid": "2deb34c0-a9fc-49bd-ba37-19f127727de0",
+  "isActive": true,
+  "balance": "$1,386.13",
+  "picture": "http://placehold.it/32x32",
+  "age": 23,
+  "eyeColor": "blue",
+  "name": "Fernandez Horne",
+  "gender": "male",
+  "company: "QUANTALIA",
+  "email": "fernandezhorne@quantalia.com",
+  "phone": "+1 (925) 409-3909",
+  "address": "636 Elliott Place, Abiquiu, Alaska, 1836",
+  "about": "Irure irure magna quis magna. Esse nulla ex in sunt dolor culpa sunt nulla labore proident sit voluptate. Sunt qui pariatur incididunt quis nulla reprehenderit voluptate consequat elit esse. Exercitation nostrud ut fugiat irure culpa sit dolor aliquip magna duis mollit. Eu tempor in commodo ullamco proident labore nulla exercitation nostrud deserunt.\r\n",
+  "registered": "2014-11-27T06:53:49 +08:00",
+  "latitude": 72.15932,
+  "longitude": -164.180543,
+  "tags": [
+    "nisi",
+    "commodo",
+    "deserunt",
+    "quis",
+    "esse",
+    "laborum",
+    "nostrud"
+  ],
+  "friends": [
+    {
+      "id": 0,
+      "name": "Gould Tate"
+    },
+    {
+      "id": 1,
+      "name": "Baird Curry"
+    },
+    {
+      "id": 2,
+      "name": "Dennis Barry"
+    }
+  ],
+  "greeting": "Hello, Fernandez Horne! You have 4 unread messages.",
+  "favoriteFruit": "banana"
+}

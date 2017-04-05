@@ -35,7 +35,7 @@
       "!dist/**/*"
     ],
     "concurrency": 5,
-    "failFast": true,
+    "failFast": false,
     "failWithoutAssertions": false,
     "tap": true,
     "powerAssert": false,

@@ -121,8 +121,8 @@ export function sortByRank(obj){
   * returns the spacing between a row's label and value
   *
   * @param  {number}      max          max number of spaces (default is 10)
-  * @param  {string}      label        the label of the row
-  * @param  {number}      num          the number of the row
+  * @param  {string}      label        the label in the row
+  * @param  {number}      num          the integer in the row
   * @return {string}                a string of spaces
   */
 export function getSpacing(max = 10, label, num){
@@ -165,10 +165,10 @@ export function getLongestArgWidth(args){
   *
   * @param  {string}      str      a string to search for
   * @param  {string}      inStr    a string to search in
-  * @return {string}               returns the num of times
+  * @return {number}               returns the num of times
   */
 export function countOccurs(str, inStr){
-  return (inStr.match(str) || []).length
+  return inStr.toLowerCase().split(str.toLowerCase()).length - 1
 }
 
 /**
