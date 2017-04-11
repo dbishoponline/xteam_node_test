@@ -43,4 +43,4 @@ cats      0
 
 ## Bonus!
 View test report
-`npm run test`
+`npm run test:report`
